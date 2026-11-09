@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Restituição — KN Consultoria Financeira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#1A1A2E;--gold:#B08D57;--champ:#F5EFE6;--ink:#2B2B2B;--muted:#6B6B6B;--line:#E4DACB;--ok:#2F7D4F;--err:#B3261E}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"DM Sans",system-ui,sans-serif;color:var(--ink);background:var(--champ);line-height:1.5}
+  .wrap{max-width:680px;margin:0 auto;padding:28px 18px 60px}
+  .logo{display:block;width:96px;height:auto;margin:0 auto 16px}
+  .brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--gold);text-transform:uppercase}
+  h1{font-family:"Cormorant Garamond",serif;color:var(--navy);font-size:40px;line-height:1.05;margin:8px 0 10px}
+  .sub{color:#555;margin:0 0 22px;font-size:16px}
+  .card{background:#fff;border-radius:14px;padding:26px 22px;box-shadow:0 2px 18px rgba(26,26,46,.07)}
+  .progress{display:flex;gap:6px;margin-bottom:20px}
+  .progress span{flex:1;height:5px;border-radius:5px;background:var(--line)}
+  .progress span.on{background:var(--gold)}
+  .stepname{font-size:12px;color:var(--gold);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  h2{font-family:"Cormorant Garamond",serif;color:var(--navy);font-size:28px;margin:0 0 16px}
+  label{display:block;font-weight:500;font-size:14.5px;margin:14px 0 6px}
+  .hint{font-weight:400;color:var(--muted);font-size:12.5px;display:block;margin-top:2px}
+  input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.row{grid-template-columns:1fr}h1{font-size:33px}}
+  .money{position:relative}.money input{padding-left:40px}
+  .money:before{content:"R$";position:absolute;left:13px;top:12px;color:var(--muted);font-size:15px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{margin:0;font-weight:400;border:1.5px solid var(--line);border-radius:30px;padding:8px 14px;cursor:pointer;font-size:14px}
+  .chips input{display:none}
+  .chips input:checked+span{color:var(--navy);font-weight:700}
+  .chips label:has(input:checked){border-color:var(--gold);background:#FBF6EE}
+  .check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:13.5px;color:#444}
+  .check input{margin-top:4px;accent-color:var(--gold)}
+  .actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px}
+  button{font:inherit;font-weight:700;border:0;border-radius:30px;padding:13px 24px;cursor:pointer;font-size:15px}
+  .primary{background:var(--navy);color:#fff}.primary:hover{background:#2a2a48}
+  .ghost{background:transparent;color:var(--navy);border:1.5px solid var(--line)}
+  .err{color:var(--err);font-size:14px;margin-top:14px;font-weight:700}
+  .err:not(:empty){background:#FBEBEB;border-radius:8px;padding:10px 12px}
+  .invalid{border-color:var(--err)!important;background:#FFF7F7!important}
+  .hidden{display:none}
+  .result-hero{background:var(--navy);color:#fff;border-radius:12px;padding:22px;text-align:center;margin:6px 0 18px}
+  .result-hero small{display:block;color:#D9C7A6;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+  .result-hero strong{display:block;font-family:"Cormorant Garamond",serif;font-size:48px;line-height:1.1;margin:6px 0;color:#fff}
+  .result-hero p{margin:0;color:#E8E1D6;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 16px}
+  td{padding:9px 6px;border-bottom:1px solid var(--line)}td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+  .callout{background:var(--champ);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;font-size:14.5px;margin:14px 0}
+  .wa{display:block;text-align:center;background:#1F8F4E;color:#fff;text-decoration:none;font-weight:700;border-radius:30px;padding:15px;margin-top:18px;font-size:16px}
+  .fine{font-size:11.5px;color:var(--muted);margin-top:16px}
+  .closing{font-family:"Cormorant Garamond",serif;color:var(--navy);font-size:22px;text-align:center;margin:22px 0 0;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="logo" alt="KN Consultoria" src="data:image/png;base64,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">
+  <h1>Quanto do seu imposto pode voltar para você?</h1>
+  <p class="sub">Ganhar bem não é sinônimo de sucesso financeiro. Responda em 3 minutos e veja uma estimativa de quanto a sua restituição pode aumentar com um planejamento tributário.</p>
+
+  <form class="card" id="f" novalidate>
+    <div class="progress"><span class="on"></span><span></span><span></span></div>
+
+    <!-- ETAPA 1 -->
+    <section data-step="1">
+      <div class="stepname">Etapa 1 de 3</div>
+      <h2>Sobre você</h2>
+      <label>Nome completo<input type="text" name="nome" required autocomplete="name"></label>
+      <div class="row">
+        <label>WhatsApp<input type="tel" name="whatsapp" required placeholder="(81) 99999-9999" autocomplete="tel"></label>
+        <label>E-mail<input type="email" name="email" required autocomplete="email"></label>
+      </div>
+      <div class="row">
+        <label>Cidade / UF<input type="text" name="cidade" required placeholder="Recife / PE"></label>
+        <label>Profissão<input type="text" name="profissao" required></label>
+      </div>
+    </section>
+
+    <!-- ETAPA 2 -->
+    <section data-step="2" class="hidden">
+      <div class="stepname">Etapa 2 de 3</div>
+      <h2>Sua renda</h2>
+      <label>Como você recebe sua renda? <span class="hint">Pode marcar mais de uma opção</span></label>
+      <div class="chips">
+        <label><input type="checkbox" name="vinculo" value="CLT" data-k="clt"><span>CLT</span></label>
+        <label><input type="checkbox" name="vinculo" value="Servidor público" data-k="servidor"><span>Servidor público</span></label>
+        <label><input type="checkbox" name="vinculo" value="Sócio PJ (pró-labore)" data-k="pj"><span>Sócio de PJ (pró-labore)</span></label>
+        <label><input type="checkbox" name="vinculo" value="Autônomo / liberal" data-k="autonomo"><span>Autônomo / profissional liberal</span></label>
+        <label><input type="checkbox" name="vinculo" value="Aposentado" data-k="aposentadoria"><span>Aposentado</span></label>
+        <label><input type="checkbox" name="vinculo" value="Aluguéis" data-k="alugueis"><span>Aluguéis</span></label>
+      </div>
+      <div id="rendas"></div>
+      <p class="hint" style="margin-top:8px">Valores brutos por mês. Não inclua 13º nem lucros/dividendos da empresa.</p>
+      <p id="rendaTotal" class="hint" style="font-weight:700;color:var(--navy)"></p>
+      <label>Você contribui para o INSS ou regime próprio de previdência?</label>
+      <div class="chips">
+        <label><input type="radio" name="contribui_inss" value="Sim"><span>Sim</span></label>
+        <label><input type="radio" name="contribui_inss" value="Não"><span>Não</span></label>
+        <label><input type="radio" name="contribui_inss" value="Não sei"><span>Não sei</span></label>
+      </div>
+      <label>Contribuição mensal ao INSS / previdência oficial
+        <span class="hint">Está no contracheque ou na guia. Preenchemos uma estimativa: ajuste se souber o valor.</span>
+        <div class="money"><input type="text" inputmode="decimal" name="inss_mensal" placeholder="0,00"></div>
+      </label>
+      <label>Quantos dependentes você declara (ou poderia declarar)?
+        <span class="hint">Filhos até 21 anos (24 se universitários), cônjuge sem renda, pais com renda baixa…</span>
+        <select name="dependentes"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </label>
+    </section>
+
+    <!-- ETAPA 3 -->
+    <section data-step="3" class="hidden">
+      <div class="stepname">Etapa 3 de 3</div>
+      <h2>Despesas e como você declara</h2>
+      <div class="row">
+        <label>Gastos com saúde no ano
+          <span class="hint">Plano, consultas, exames, dentista (seus e dos dependentes)</span>
+          <div class="money"><input type="text" inputmode="decimal" name="saude_anual" placeholder="0,00"></div>
+        </label>
+        <label>Gastos com educação no ano
+          <span class="hint">Escola, faculdade, pós (sem cursos livres)</span>
+          <div class="money"><input type="text" inputmode="decimal" name="educacao_anual" placeholder="0,00"></div>
+        </label>
+      </div>
+      <div class="row">
+        <label>Pensão alimentícia paga no ano
+          <span class="hint">Só a definida judicialmente ou em escritura</span>
+          <div class="money"><input type="text" inputmode="decimal" name="pensao_anual" placeholder="0,00"></div>
+        </label>
+        <label>Já aplica em PGBL? Quanto por ano?
+          <span class="hint">Deixe em branco se não tiver</span>
+          <div class="money"><input type="text" inputmode="decimal" name="pgbl_atual_anual" placeholder="0,00"></div>
+        </label>
+      </div>
+      <div class="row">
+        <label>Hoje você declara no modelo…
+          <select name="modelo_atual"><option value="">Selecione</option><option>Simplificado</option><option>Completo</option><option>Não sei</option><option>Não declaro</option></select>
+        </label>
+        <label>Quem faz sua declaração?
+          <select name="quem_declara"><option value="">Selecione</option><option>Eu mesmo(a)</option><option>Contador(a)</option><option>Outra pessoa</option></select>
+        </label>
+      </div>
+      <label>O que você mais quer resolver agora?
+        <select name="objetivo"><option value="">Selecione</option><option>Pagar menos imposto / receber mais restituição</option><option>Começar a investir para a aposentadoria</option><option>Organizar as finanças da família</option><option>Planejar o futuro dos filhos</option><option>Outro</option></select>
+      </label>
+      <div class="row">
+        <label>Melhor horário para contato
+          <select name="horario"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option><option>Noite</option></select>
+        </label>
+        <label>Como conheceu a KN?
+          <select name="origem"><option value="">Selecione</option><option>Instagram</option><option>Indicação</option><option>Google</option><option>Evento / palestra</option><option>Outro</option></select>
+        </label>
+      </div>
+      <label>Quer contar algo a mais? <span class="hint">Opcional</span><textarea name="obs" rows="2"></textarea></label>
+      <label class="check"><input type="checkbox" name="lgpd" required> <span>Autorizo a KN Consultoria Financeira a guardar estes dados e a entrar em contato comigo sobre o planejamento tributário, conforme a LGPD.</span></label>
+    </section>
+
+    <div class="err" id="err"></div>
+    <div class="actions" id="nav">
+      <button type="button" class="ghost hidden" id="back">Voltar</button>
+      <button type="button" class="primary" id="next" style="margin-left:auto">Continuar</button>
+    </div>
+  </form>
+
+  <!-- RESULTADO -->
+  <div class="card hidden" id="res"></div>
+</div>
+
+<script>
+(function () {
+"use strict";
+try {
+/* ================= CONFIGURAÇÃO ================= */
+const CONFIG = {
+  // URL do Apps Script (implantação como app da Web). Vazio = modo demonstração (não grava).
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw6YByg4xHDHCa6thl0xdJ2Ewm3jU0ArKFqQJaI7_qcuogh-5_23jPuD7JOB7c6jkN1pw/exec",
+  // WhatsApp da KN: 55 + DDD + número, só dígitos
+  WHATSAPP: "5581981344060",
+};
+/* ================================================ */
+
+const $ = s => document.querySelector(s);
+const form = $("#f");
+let step = 1;
+
+const num = v => { if (!v) return 0; const n = parseFloat(String(v).replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")); return isNaN(n) ? 0 : n; };
+const brl = v => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* --- regras 2026 --- */
+const TAB = [[29145.60, 0, 0], [33919.80, .075, 2185.92], [45012.60, .15, 4729.91], [55976.16, .225, 8105.85], [1e15, .275, 10904.66]];
+const irTab = b => { for (const [l, a, d] of TAB) if (b <= l) return Math.max(b * a - d, 0); };
+const redutor = r => r <= 60000 ? 2694.15 : (r <= 88200 ? Math.max(8429.73 - 0.095575 * r, 0) : 0);
+const imposto = (rend, ded) => { const i = irTab(Math.max(rend - ded, 0)); return Math.max(i - Math.min(redutor(rend), i), 0); };
+const INSS_TETO = 8475.55;
+const NOMES = { clt: "CLT (salário bruto)", servidor: "Servidor público (remuneração bruta)", pj: "Pró-labore", autonomo: "Autônomo / liberal (carnê-leão)", aposentadoria: "Aposentadoria", alugueis: "Aluguéis" };
+const vinculos = () => [...form.querySelectorAll("[name=vinculo]:checked")].map(c => c.dataset.k);
+const rendaDe = k => { const i = form.querySelector(`[name=renda_${k}]`); return i ? num(i.value) : 0; };
+const rendaTotal = () => vinculos().reduce((t, k) => t + rendaDe(k), 0);
+function inssEstimado() {
+  const v = vinculos(); let teto = INSS_TETO, total = 0;
+  if (v.includes("clt")) { const s = Math.min(rendaDe("clt"), INSS_TETO); const f = [[1621.00, .075, 0], [2902.84, .09, 24.32], [4354.27, .12, 111.40], [INSS_TETO, .14, 198.49]]; for (const [l, a, d] of f) if (s <= l) { total += Math.max(s * a - d, 0); break; } teto -= s; }
+  const indiv = (v.includes("pj") ? rendaDe("pj") : 0) + (v.includes("autonomo") ? rendaDe("autonomo") : 0);
+  total += Math.min(indiv, Math.max(teto, 0)) * 0.11;
+  if (v.includes("servidor")) total += rendaDe("servidor") * 0.14;
+  return total;
+}
+function montaRendas() {
+  const box = $("#rendas"), atuais = {};
+  box.querySelectorAll("input").forEach(i => atuais[i.name] = i.value);
+  box.innerHTML = vinculos().map(k => `<label>Renda mensal: ${NOMES[k]}<div class="money"><input type="text" inputmode="decimal" name="renda_${k}" placeholder="0,00" value="${atuais["renda_" + k] || ""}"></div></label>`).join("");
+  box.querySelectorAll("input").forEach(i => { i.addEventListener("input", () => { sugereInss(); totalTxt(); }); i.addEventListener("blur", () => { if (i.value) i.value = fmt(num(i.value)); }); });
+  sugereInss(); totalTxt();
+}
+function totalTxt() { const t = rendaTotal(); $("#rendaTotal").textContent = vinculos().length > 1 && t ? `Renda mensal total: ${brl(t)}` : ""; }
+
+/* estimativa automática do INSS */
+function sugereInss() {
+  const f = form.inss_mensal;
+  if (f.dataset.edited === "1") return;
+  if (form.contribui_inss.value === "Não") { f.value = "0,00"; return; }
+  const e = inssEstimado(); f.value = e ? fmt(e) : "";
+}
+form.inss_mensal.addEventListener("input", e => e.target.dataset.edited = "1");
+form.querySelectorAll("[name=vinculo]").forEach(el => el.addEventListener("change", montaRendas));
+form.querySelectorAll("[name=contribui_inss]").forEach(el => el.addEventListener("change", sugereInss));
+form.querySelectorAll(".money input").forEach(i => i.addEventListener("blur", () => { if (i.value) i.value = fmt(num(i.value)); }));
+
+/* navegação */
+function show(n) {
+  form.querySelectorAll("section").forEach(s => s.classList.toggle("hidden", +s.dataset.step !== n));
+  form.querySelectorAll(".progress span").forEach((p, i) => p.classList.toggle("on", i < n));
+  $("#back").classList.toggle("hidden", n === 1);
+  $("#next").textContent = n === 3 ? "Ver minha estimativa" : "Continuar";
+  $("#err").textContent = ""; step = n; window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function valida(n) {
+  const sec = form.querySelector(`[data-step="${n}"]`);
+  sec.querySelectorAll(".invalid").forEach(e => e.classList.remove("invalid"));
+  const bad = (el, msg) => { if (el) { el.classList.add("invalid"); try { el.focus({ preventScroll: true }); } catch (e) {} el.scrollIntoView({ block: "center" }); } return msg; };
+  for (const el of sec.querySelectorAll("[required]")) {
+    if (el.type === "checkbox") { if (!el.checked) return bad(el.closest("label"), "Marque a autorização de uso dos dados para ver sua estimativa."); continue; }
+    if (!el.value.trim()) return bad(el, "Preencha o campo destacado em vermelho.");
+    if (el.type === "email" && !/^\S+@\S+\.\S+$/.test(el.value.trim())) return bad(el, "Confira o e-mail (exemplo: nome@gmail.com).");
+    if (el.name === "whatsapp" && el.value.replace(/\D/g, "").length < 10) return bad(el, "Coloque o WhatsApp com DDD (exemplo: 81 99999-9999).");
+  }
+  if (n === 2) {
+    if (!vinculos().length) return bad(sec.querySelector(".chips"), "Marque como você recebe sua renda.");
+    const vazio = vinculos().find(k => rendaDe(k) <= 0);
+    if (vazio) return bad(form.querySelector(`[name=renda_${vazio}]`), "Informe o valor mensal de cada renda marcada.");
+    if (!form.contribui_inss.value) return bad(form.querySelectorAll(".chips")[1], "Diga se você contribui para o INSS ou regime próprio.");
+  }
+  return "";
+}
+form.addEventListener("input", e => { e.target.classList.remove("invalid"); $("#err").textContent = ""; });
+form.addEventListener("change", e => { const c = e.target.closest(".chips, label"); if (c) c.classList.remove("invalid"); $("#err").textContent = ""; });
+$("#back").onclick = () => show(step - 1);
+$("#next").onclick = () => { const e = valida(step); if (e) { $("#err").textContent = "⚠ " + e; return; } if (step < 3) show(step + 1); else finaliza(); };
+
+/* cálculo */
+function calcula(d) {
+  const renda = d.renda_mensal * 12, dep = d.dependentes;
+  const contribui = d.contribui_inss !== "Não";
+  const tetoPgbl = renda * 0.12;
+  const pgblAtual = contribui ? Math.min(d.pgbl_atual_anual, tetoPgbl) : 0;
+  const ded = d.inss_mensal * 12 + dep * 2275.08 + d.saude_anual + Math.min(d.educacao_anual, 3561.50 * (1 + dep)) + d.pensao_anual + pgblAtual;
+  const tS = imposto(renda, Math.min(renda * 0.2, 17640)), tC = imposto(renda, ded);
+  const melhor = Math.min(tS, tC);
+  const aporte = contribui ? Math.max(tetoPgbl - pgblAtual, 0) : 0;
+  const tP = imposto(renda, ded + aporte);
+  const ganho = Math.max(melhor - tP, 0);
+  return { renda, tetoPgbl, aporte, tS, tC, tP, melhor, modeloHoje: tS <= tC ? "Simplificado" : "Completo", ganho, fv: ganho * Math.pow(1.009, 120), contribui };
+}
+
+function coleta() {
+  const fd = new FormData(form), d = {};
+  for (const [k, v] of fd.entries()) if (k !== "vinculo") d[k] = v;
+  d.vinculo = [...form.querySelectorAll("[name=vinculo]:checked")].map(c => c.value).join(" + ");
+  ["clt", "servidor", "pj", "autonomo", "aposentadoria", "alugueis"].forEach(k => d["renda_" + k] = rendaDe(k));
+  d.renda_mensal = rendaTotal();
+  ["inss_mensal", "saude_anual", "educacao_anual", "pensao_anual", "pgbl_atual_anual"].forEach(k => d[k] = num(d[k]));
+  d.dependentes = +d.dependentes || 0; d.lgpd = form.lgpd.checked ? "Sim" : "Não";
+  return d;
+}
+
+async function grava(payload) {
+  if (window.google && google.script && google.script.run) {
+    return new Promise(res => google.script.run.withSuccessHandler(() => res(true)).withFailureHandler(() => res(false)).salvar(payload));
+  }
+  if (!CONFIG.SCRIPT_URL) return "demo";
+  try { await fetch(CONFIG.SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); return true; }
+  catch (e) { return false; }
+}
+
+async function finaliza() {
+  const btn = $("#next"); btn.disabled = true; btn.textContent = "Calculando…";
+  const d = coleta(), r = calcula(d);
+  const payload = { ...d, renda_anual: +r.renda.toFixed(2), aporte_sugerido: +r.aporte.toFixed(2), ganho_estimado: +r.ganho.toFixed(2), modelo_melhor_hoje: r.modeloHoje, imposto_sem_pgbl: +r.melhor.toFixed(2), imposto_com_pgbl: +r.tP.toFixed(2), valor_10_anos: +r.fv.toFixed(2) };
+  const ok = await grava(payload);
+  renderResultado(d, r, ok);
+}
+
+function renderResultado(d, r, ok) {
+  const primeiro = d.nome.trim().split(/\s+/)[0];
+  const msg = encodeURIComponent(`Olá, Kim! Sou ${d.nome}. Fiz a simulação no site e a estimativa foi de ${brl(r.ganho)} a mais de restituição. Quero fazer meu planejamento tributário.`);
+  const wa = `https://wa.me/${CONFIG.WHATSAPP}?text=${msg}`;
+  let corpo;
+  if (r.ganho >= 50) {
+    corpo = `
+      <div class="result-hero"><small>Sua restituição pode aumentar em até</small><strong>${brl(r.ganho)}</strong></div>
+      <table>
+        <tr><td>Renda tributável no ano (estimada)</td><td>${brl(r.renda)}</td></tr>
+        <tr><td>Melhor modelo hoje</td><td>${r.modeloHoje}</td></tr>
+        <tr><td>Imposto no ano sem planejamento</td><td>${brl(r.melhor)}</td></tr>
+        <tr><td>Imposto no ano com planejamento</td><td>${brl(r.tP)}</td></tr>
+        <tr><td>Esse ganho investido por 10 anos (0,9% a.m.)</td><td>${brl(r.fv)}</td></tr>
+      </table>`;
+  } else if (!r.contribui) {
+    corpo = `<div class="callout">Para abater o PGBL do Imposto de Renda é preciso contribuir para o INSS ou para um regime próprio de previdência. Pela sua resposta, isso ainda não acontece. Fale com a gente: existem outros caminhos para o seu dinheiro render mais.</div>`;
+  } else if (r.renda <= 60000) {
+    corpo = `<div class="callout">Boa notícia: pela regra nova de 2026, quem tem até R$ 60 mil de renda tributável no ano fica isento de IR. Nesse caso o PGBL não traz ganho de imposto, mas a KN pode te ajudar a organizar e investir melhor o que sobra.</div>`;
+  } else {
+    corpo = `<div class="callout">Pelas suas respostas, o ganho de imposto com o PGBL é pequeno no seu caso. Ainda assim, vale uma conversa: podemos revisar suas deduções e encontrar outros ajustes na sua declaração.</div>`;
+  }
+  $("#res").innerHTML = `
+    <div class="stepname">Sua estimativa</div>
+    <h2>${primeiro}, aqui está o seu resultado</h2>
+    ${corpo}
+    <a class="wa" href="${wa}" target="_blank" rel="noopener">Quero meu planejamento pelo WhatsApp</a>
+    <p class="fine" style="text-align:center">Se o WhatsApp não abrir, chame no número +${CONFIG.WHATSAPP.replace(/^55(\d{2})(\d+)(\d{4})$/, "55 ($1) $2-$3")}.</p>
+    ${ok === "demo" ? '<p class="fine"><strong>Modo demonstração:</strong> as respostas não foram gravadas.</p>' : ok ? "" : '<p class="fine">Não conseguimos registrar suas respostas agora, mas fale com a gente pelo WhatsApp.</p>'}
+    <p class="fine">Estimativa educativa com as regras do IR para o ano-calendário 2026 (incluindo a redução da Lei 15.270/2025), com base apenas nas suas respostas. O valor exato depende da sua declaração. Não é recomendação de investimento.</p>
+    <p class="closing">Meus sonhos não ficarão com as sobras.</p>`;
+  form.classList.add("hidden"); $("#res").classList.remove("hidden"); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+} catch (e) {
+  var el = document.getElementById("err");
+  if (el) el.textContent = "Erro ao carregar o formulário: " + e.message;
+}
+})();
+</script>
+</body>
+</html>
